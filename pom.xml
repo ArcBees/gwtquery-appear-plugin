@@ -79,7 +79,7 @@
         <maven-surefire-plugin.version>2.18.1</maven-surefire-plugin.version>
         <maven-source-plugin.version>2.4</maven-source-plugin.version>
 
-        <target.jdk>1.6</target.jdk>
+        <target.jdk>1.7</target.jdk>
 
         <gpg.passphrase>SetAsParam</gpg.passphrase>
     </properties>

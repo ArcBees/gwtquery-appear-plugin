@@ -38,7 +38,7 @@ public class Appear extends GQuery {
 
     private static final String DISAPPEAR_EVENT = "disappear";
     private static final String APPEAR_EVENT = "appear";
-    private static final Map<Element, AppearImpl> impls = new HashMap<Element, AppearImpl>();
+    private static final Map<Element, AppearImpl> impls = new HashMap<>();
 
     private static HandlerRegistration handlerRegistration;
 
