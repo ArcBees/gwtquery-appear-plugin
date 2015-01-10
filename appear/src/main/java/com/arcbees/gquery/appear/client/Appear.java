@@ -19,9 +19,12 @@ package com.arcbees.gquery.appear.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.arcbees.gquery.appear.client.AppearOptions.AppearOffset;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.query.client.Function;
 import com.google.gwt.query.client.GQuery;
@@ -46,17 +49,21 @@ public class Appear extends GQuery {
         super(gq);
     }
 
-    public Appear appear(Function... f) {
+    public Appear appear(AppearOptions options, Function... f) {
         on(APPEAR_EVENT, f);
 
         for (Element element : elements()) {
-            AppearImpl impl = getOrCreateImpl(element);
+            AppearImpl impl = getOrCreateImpl(element, options);
             impl.setAppear(true);
         }
 
         maybeInitHandlers();
 
         return this;
+    }
+
+    public Appear appear(Function... f) {
+        return appear(new AppearOptions(), f);
     }
 
     public Appear appearOff() {
@@ -79,10 +86,16 @@ public class Appear extends GQuery {
     }
 
     public Appear disappear(Function... f) {
+        return disappear(new AppearOptions(), f);
+    }
+
+    public Appear disappear(
+            AppearOptions options,
+            Function... f) {
         on(DISAPPEAR_EVENT, f);
 
         for (Element element : elements()) {
-            AppearImpl impl = getOrCreateImpl(element);
+            AppearImpl impl = getOrCreateImpl(element, options);
 
             impl.setDisappear(true);
         }
@@ -128,6 +141,13 @@ public class Appear extends GQuery {
                 }
             });
 
+            final HandlerRegistration resizeHandler = Window.addResizeHandler(new ResizeHandler() {
+                @Override
+                public void onResize(ResizeEvent event) {
+                    checkElementsAppearance();
+                }
+            });
+
             final Observe observeHandler = $(Document.get()).as(Observe.Observe)
                     .observe(Observe.createInit()
                             .childList(true)
@@ -142,16 +162,17 @@ public class Appear extends GQuery {
                 @Override
                 public void removeHandler() {
                     scrollHandler.removeHandler();
+                    resizeHandler.removeHandler();
                     observeHandler.disconnect();
                 }
             };
         }
     }
 
-    private AppearImpl getOrCreateImpl(Element element) {
+    private AppearImpl getOrCreateImpl(Element element, AppearOptions options) {
         AppearImpl impl = getImpl(element);
         if (impl == null) {
-            impl = new AppearImpl();
+            impl = new AppearImpl(options);
             impls.put(element, impl);
         }
 
@@ -177,7 +198,7 @@ public class Appear extends GQuery {
             AppearImpl impl) {
 
         if ($(element).isVisible()) {
-            if (isScrolledIntoView(element)) {
+            if (isScrolledIntoView(element, impl)) {
                 maybeOnElementAppeared(element, impl);
             } else {
                 maybeOnElementDisappeared(element, impl);
@@ -201,15 +222,27 @@ public class Appear extends GQuery {
         }
     }
 
-    private static boolean isScrolledIntoView(Element e) {
+    private static boolean isScrolledIntoView(Element e, AppearImpl impl) {
         int docViewTop = Window.getScrollTop();
         int docViewBottom = docViewTop + Window.getClientHeight();
-        int elemTop = e.getAbsoluteTop();
-        int elemBottom = elemTop + e.getClientHeight();
+        int docViewLeft = Window.getScrollLeft();
+        int docViewRight = docViewLeft + Window.getClientWidth();
 
-        return elemTop >= docViewTop && elemBottom <= docViewBottom
+        AppearOffset offset = impl.getOptions().getOffset();
+        int elemTop = e.getAbsoluteTop() + offset.getTop();
+        int elemLeft = e.getAbsoluteLeft() + offset.getLeft();
+        int elemBottom = elemTop + Math.max(0, e.getOffsetHeight() - offset.getBottom());
+        int elemRight = elemLeft + Math.max(0, e.getOffsetWidth() - offset.getRight());
+
+        boolean isVerticalVisible = elemTop >= docViewTop && elemBottom <= docViewBottom
                 || elemTop <= docViewBottom && elemBottom > docViewBottom
                 || elemBottom >= docViewTop && elemTop < docViewTop;
+
+        boolean isHorizontalVisible = elemLeft >= docViewLeft && elemRight <= docViewRight
+                || elemLeft <= docViewRight && elemRight > docViewRight
+                || elemRight >= docViewLeft && elemLeft < docViewLeft;
+
+        return isVerticalVisible && isHorizontalVisible;
     }
 
     private static AppearImpl getImpl(Element e) {
