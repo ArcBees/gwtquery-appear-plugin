@@ -180,6 +180,22 @@ public class Appear extends GQuery {
     }
 
     /**
+     * @return true if all the elements are visible in the view area, false otherwise
+     */
+    public boolean isAppeared() {
+        for (Element element : elements()) {
+            AppearImpl impl = getImpl(element);
+            if (impl != null) {
+                if (!impl.isAppeared()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Binds functions to be triggered when the elements appear in the view area
      *
      * @param options
@@ -380,7 +396,7 @@ public class Appear extends GQuery {
         String overflow = e.getStyle().getOverflow();
         String overflowX = e.getStyle().getOverflowX();
         String overflowY = e.getStyle().getOverflowY();
-        
+
         return auto.equalsIgnoreCase(overflow)
                 || auto.equalsIgnoreCase(overflowX)
                 || auto.equalsIgnoreCase(overflowY)
