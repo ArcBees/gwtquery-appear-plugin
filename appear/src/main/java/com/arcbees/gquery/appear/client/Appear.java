@@ -127,8 +127,8 @@ public class Appear extends GQuery {
         AppearOffset offset = impl.getOptions().getOffset();
         int elemTop = e.getAbsoluteTop() + offset.getTop();
         int elemLeft = e.getAbsoluteLeft() + offset.getLeft();
-        int elemBottom = elemTop + Math.max(0, e.getOffsetHeight() - offset.getBottom());
-        int elemRight = elemLeft + Math.max(0, e.getOffsetWidth() - offset.getRight());
+        int elemBottom = elemTop + e.getOffsetHeight() - offset.getBottom();
+        int elemRight = elemLeft + e.getOffsetWidth() - offset.getRight();
 
         boolean isVerticalVisible = elemTop >= docViewTop && elemBottom <= docViewBottom
                 || elemTop <= docViewBottom && elemBottom > docViewBottom
