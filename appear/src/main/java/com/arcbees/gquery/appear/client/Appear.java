@@ -72,10 +72,7 @@ public class Appear extends GQuery {
         }
     }
 
-    /**
-     * Force checking the appearance status of all bound elements
-     */
-    public static void checkElementsAppearance() {
+    private static void checkElementsAppearance() {
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
             public void execute() {
