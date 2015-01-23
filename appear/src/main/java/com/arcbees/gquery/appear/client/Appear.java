@@ -87,7 +87,6 @@ public class Appear extends GQuery {
     }
 
     private static void checkElementAppearance(Element element, AppearImpl impl) {
-
         if ($(element).isVisible()) {
             if (isScrolledIntoView(element, impl)) {
                 maybeOnElementAppeared(element, impl);
